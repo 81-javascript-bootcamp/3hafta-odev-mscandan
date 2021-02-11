@@ -6,6 +6,7 @@ const petsModule = (function () {
       type: 'Golden Retriever/St. Bernard Mix',
       sound: 'bark',
       soundText: 'Bark - type b',
+      eventKey: 'b',
     },
     {
       image: 'https://pet-uploads.adoptapet.com/0/f/3/462356648.jpg',
@@ -13,6 +14,7 @@ const petsModule = (function () {
       type: 'Domestic Shorthair',
       sound: 'meow',
       soundText: 'Meow - type m',
+      eventKey: 'm',
     },
     {
       image:
@@ -21,6 +23,7 @@ const petsModule = (function () {
       type: 'Elephant',
       sound: 'elephant',
       soundText: 'Elephant - type e',
+      eventKey: 'e',
     },
     {
       image:
@@ -29,6 +32,7 @@ const petsModule = (function () {
       type: 'Tiger',
       sound: 'roar-tiger',
       soundText: 'Tiger - type t',
+      eventKey: 't',
     },
     {
       image:
@@ -37,30 +41,31 @@ const petsModule = (function () {
       type: 'Lion',
       sound: 'roar-lion',
       soundText: 'Lion - type l',
+      eventKey: 'l',
     },
   ];
   const $tbodyEl = document.querySelector('tbody');
-  const $petImageEl = document.getElementsByClassName('main-image');
+  const $petImageEl = document.getElementsByClassName('main-image')[0];
   const $bodyEl = document.body;
 
   const getButtons = function () {
     return document.querySelectorAll('button');
   };
 
-  const createPetElement = function (pet) {
-    return (
-      "<tr><td><img class='pet-image' src='" +
-      pet.image +
-      "' /></td><td>" +
-      pet.name +
-      '</td><td>' +
-      pet.type +
-      "</td><td><button data-sound='" +
-      pet.sound +
-      "'>" +
-      pet.soundText +
-      '</button></td></tr>'
-    );
+  const createPetElement = (pet) => {
+    return `<tr><td><img class='pet-image' src=${pet.image} /></td>
+      <td>${pet.name}</td>
+      <td>${pet.type}</td>
+      <td><button data-sound=${pet.sound}>${pet.soundText}</button></td></tr>`;
+  };
+
+  const createAndAppendAudioElements = () => {
+    _data.map((pet) => {
+      const $audio = document.createElement('audio');
+      $audio.setAttribute('src', `sounds/${pet.sound}.mp3`);
+      $audio.setAttribute('id', pet.sound);
+      $bodyEl.append($audio);
+    });
   };
 
   const addToTable = function (content) {
@@ -73,63 +78,55 @@ const petsModule = (function () {
     }
   };
 
-  const bindEvents = function () {
-    const buttons = getButtons();
-    for (let i = 0; i < buttons.length; i++) {
-      buttons[i].addEventListener('click', function (event) {
-        event.stopPropagation(); // butona basildiginda table row'a basilinca calisacak olan seyler calismasin
-        const soundId = this.dataset.sound;
-        const soundElement = document.getElementById(soundId);
-        if (soundElement) {
-          soundElement.play();
+  const bindClickEventsToButtons = () => {
+    const $buttons = getButtons();
+    $buttons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const soundId = btn.getAttribute('data-sound');
+        const $soundEl = document.getElementById(soundId);
+        if ($soundEl) {
+          $soundEl.play();
         }
       });
-    }
+    });
   };
 
   const getTableRows = function () {
     return document.querySelectorAll('tr');
   };
 
-  const changeBackground = function () {
-    const tableRows = getTableRows();
-    for (let i = 0; i < tableRows.length; ++i) {
-      tableRows[i].addEventListener('click', function () {
-        // Sutun basliklarinin oldugu satirda renk degisimi yapma
-        if (i !== 0) {
-          tableRows[i].classList.toggle('clicked'); // class ekleyerek rengini degistir
-        }
-        $petImageEl[0].src = tableRows[i].getElementsByTagName('img')[0].src; // satira tiklandiginda pet resmi degistir
-      });
-    }
+  const changeBackgroundAndImageOnRowClick = () => {
+    const $tableRows = getTableRows();
+    $tableRows.forEach((row, i) => {
+      if (i > 0) {
+        // ilk row thead orda islem yapmiyoruz
+        row.addEventListener('click', () => {
+          row.classList.toggle('clicked');
+          $petImageEl.src = row.getElementsByTagName('img')[0].src; // satira tiklandiginda pet resmi degistir
+        });
+      }
+    });
   };
 
-  const listenForKeydown = function () {
+  const listenForKeydown = () => {
     $bodyEl.addEventListener('keydown', function (e) {
-      console.log(e.keyCode);
-      if (e.keyCode === 66) {
-        // b tusuna basilirsa
-        document.getElementById('bark').play();
-      } else if (e.keyCode === 77) {
-        // m tusuna basilirsa
-        document.getElementById('meow').play();
-      } else if (e.keyCode === 84) {
-        // t tusuna basilirsa
-        document.getElementById('roar-tiger').play();
-      } else if (e.keyCode === 69) {
-        // e tusuna basilirsa
-        document.getElementById('elephant').play();
-      } else if (e.keyCode === 76) {
-        // e tusuna basilirsa
-        document.getElementById('roar-lion').play();
-      }
+      _data.map((pet) => {
+        if (e.key === pet.eventKey) {
+          const $soundEl = document.getElementById(pet.sound);
+          if ($soundEl) {
+            $soundEl.play();
+          }
+        }
+      });
     });
   };
 
   const init = function () {
     putPetsInHtml();
-    bindEvents();
-    changeBackground();
+    createAndAppendAudioElements();
+    bindClickEventsToButtons();
+    changeBackgroundAndImageOnRowClick();
     listenForKeydown();
   };
 
