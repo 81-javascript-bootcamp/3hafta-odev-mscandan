@@ -60,7 +60,7 @@ const petsModule = (function () {
   };
 
   const createAndAppendAudioElements = () => {
-    _data.map((pet) => {
+    _data.forEach((pet) => {
       const $audio = document.createElement('audio');
       $audio.setAttribute('src', `sounds/${pet.sound}.mp3`);
       $audio.setAttribute('id', pet.sound);
@@ -132,7 +132,7 @@ const petsModule = (function () {
   const listenForKeydown = () => {
     $bodyEl.addEventListener('keydown', function (e) {
       pausePlayingAudio(); // diger sesleri sustur
-      _data.map((pet) => {
+      _data.forEach((pet) => {
         if (e.key === pet.eventKey) {
           const $soundEl = document.getElementById(pet.sound);
           if ($soundEl) {
