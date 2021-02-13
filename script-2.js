@@ -82,6 +82,7 @@ const petsModule = (function () {
     const $buttons = getButtons();
     $buttons.forEach((btn) => {
       btn.addEventListener('click', (e) => {
+        pausePlayingAudio(); // diger sesleri sustur
         e.stopPropagation();
         const soundId = btn.getAttribute('data-sound');
         const $soundEl = document.getElementById(soundId);
@@ -96,14 +97,33 @@ const petsModule = (function () {
     return document.querySelectorAll('tr');
   };
 
+  const pausePlayingAudio = () => {
+    const $allSoundEl = document.querySelectorAll('audio');
+    $allSoundEl.forEach((el) => {
+      el.pause(); // baska bir butona tiklandiginda diger seslerin susmasi
+      el.currentTime = 0;
+    });
+  };
+
   const changeBackgroundAndImageOnRowClick = () => {
     const $tableRows = getTableRows();
     $tableRows.forEach((row, i) => {
       if (i > 0) {
         // ilk row thead orda islem yapmiyoruz
         row.addEventListener('click', () => {
-          row.classList.toggle('clicked');
+          // sadece tiklanan row'da background degisikligi
+          pausePlayingAudio(); // diger sesleri sustur
+          $tableRows.forEach((row) => {
+            if (row.classList.contains('clicked')) {
+              row.classList.remove('clicked');
+            }
+          });
+          row.classList.add('clicked');
           $petImageEl.src = row.getElementsByTagName('img')[0].src; // satira tiklandiginda pet resmi degistir
+          $rowsButton = row.getElementsByTagName('button')[0]; // satira tiklandiginda satira ait butonun calismasi
+          if ($rowsButton) {
+            $rowsButton.click();
+          }
         });
       }
     });
@@ -111,6 +131,7 @@ const petsModule = (function () {
 
   const listenForKeydown = () => {
     $bodyEl.addEventListener('keydown', function (e) {
+      pausePlayingAudio(); // diger sesleri sustur
       _data.map((pet) => {
         if (e.key === pet.eventKey) {
           const $soundEl = document.getElementById(pet.sound);
